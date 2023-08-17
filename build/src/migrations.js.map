@@ -1,0 +1,1 @@
+{"version":3,"file":"migrations.js","sourceRoot":"","sources":["../../src/migrations.ts"],"names":[],"mappings":";;;AAAA,sFAG8C;AAIjC,QAAA,aAAa,GAAG;IAC3B,IAAI,gDAAkB,CACpB,gCAAgC,EAChC,8BAAmD,CACpD;CACF,CAAC;AAEF,iEAAiE;AAC1D,KAAK,UAAU,8BAA8B,CAClD,UAA2B;IAE3B,MAAM,UAAU,CAAC,KAAK,CAAC,eAAe,UAAU,CAAC,wBAAwB;wCACnC,CAAC,CAAC;AAC1C,CAAC;AALD,wEAKC"}
