@@ -1,17 +1,17 @@
-import mysql from 'mysql2/promise';
-import {RdbmsConnection} from '@shopify/shopify-app-session-storage';
+import { Pool, createPool } from "mysql2/promise";
+import { RdbmsConnection } from "@shopify/shopify-app-session-storage";
 
 export class MySqlConnection implements RdbmsConnection {
   sessionStorageIdentifier: string;
   private ready: Promise<void>;
   private dbUrl: URL;
   private connectionPoolLimit: number;
-  private pool: mysql.Pool;
+  private pool: Pool;
 
   constructor(
     dbUrl: URL,
     sessionStorageIdentifier: string,
-    connectionPoolLimit: number,
+    connectionPoolLimit: number
   ) {
     this.dbUrl = dbUrl;
     this.connectionPoolLimit = connectionPoolLimit;
@@ -34,10 +34,10 @@ export class MySqlConnection implements RdbmsConnection {
 
     // check if the first and last queries are BEGIN and COMMIT, if they are, ignore them
     // mysql2
-    if (queries[0] === 'BEGIN') {
+    if (queries[0] === "BEGIN") {
       queries.shift();
     }
-    if (queries[queries.length - 1] === 'COMMIT') {
+    if (queries[queries.length - 1] === "COMMIT") {
       queries.pop();
     }
     const client = await this.pool.getConnection();
@@ -96,13 +96,14 @@ export class MySqlConnection implements RdbmsConnection {
   }
 
   private async init(): Promise<void> {
-    this.pool = await mysql.createPool({
+    this.pool = createPool({
       connectionLimit: this.connectionPoolLimit,
       host: this.dbUrl.hostname,
       user: decodeURIComponent(this.dbUrl.username),
       password: decodeURIComponent(this.dbUrl.password),
       database: this.getDatabase(),
       port: Number(this.dbUrl.port),
+      socketPath: this.dbUrl.searchParams.get("socketPath") ?? undefined,
     });
   }
 }

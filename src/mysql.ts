@@ -1,12 +1,12 @@
-import {Session} from '@shopify/shopify-api';
+import { Session } from "@shopify/shopify-api";
 import {
   SessionStorage,
   RdbmsSessionStorageOptions,
-} from '@shopify/shopify-app-session-storage';
+} from "@shopify/shopify-app-session-storage";
 
-import {migrationList} from './migrations';
-import {MySqlConnection} from './mysql-connection';
-import {MySqlSessionStorageMigrator} from './mysql-migrator';
+import { migrationList } from "./migrations";
+import { MySqlConnection } from "./mysql-connection";
+import { MySqlSessionStorageMigrator } from "./mysql-migrator";
 
 export interface MySQLSessionStorageOptions extends RdbmsSessionStorageOptions {
   connectionPoolLimit: number;
@@ -14,29 +14,35 @@ export interface MySQLSessionStorageOptions extends RdbmsSessionStorageOptions {
 
 const defaultMySQLSessionStorageOptions: MySQLSessionStorageOptions = {
   connectionPoolLimit: 10,
-  sessionTableName: 'shopify_sessions',
+  sessionTableName: "shopify_sessions",
   migratorOptions: {
-    migrationDBIdentifier: 'shopify_sessions_migrations',
-    migrationNameColumnName: 'migration_name',
+    migrationDBIdentifier: "shopify_sessions_migrations",
+    migrationNameColumnName: "migration_name",
   },
 };
 
 export class MySQLSessionStorage implements SessionStorage {
   static withCredentials(
-    host: string,
-    dbName: string,
-    username: string,
-    password: string,
-    opts: Partial<MySQLSessionStorageOptions>,
+    data: {
+      host: string;
+      port: number;
+      dbName: string;
+      username: string;
+      password: string;
+      socketPath?: string;
+    },
+    opts: Partial<MySQLSessionStorageOptions>
   ) {
-    return new MySQLSessionStorage(
-      new URL(
-        `mysql://${encodeURIComponent(username)}:${encodeURIComponent(
-          password,
-        )}@${host}/${encodeURIComponent(dbName)}`,
-      ),
-      opts,
+    const e = encodeURIComponent;
+    const url = new URL(
+      `mysql://${e(data.username)}:${e(data.password)}@${data.host}/${e(
+        data.dbName
+      )}`
     );
+    if (data.socketPath != null) {
+      url.searchParams.set("socketPath", data.socketPath);
+    }
+    return new MySQLSessionStorage(url, opts);
   }
 
   public readonly ready: Promise<void>;
@@ -47,16 +53,16 @@ export class MySQLSessionStorage implements SessionStorage {
 
   constructor(
     dbUrl: URL | string,
-    opts: Partial<MySQLSessionStorageOptions> = {},
+    opts: Partial<MySQLSessionStorageOptions> = {}
   ) {
-    this.options = {...defaultMySQLSessionStorageOptions, ...opts};
+    this.options = { ...defaultMySQLSessionStorageOptions, ...opts };
     this.internalInit = this.init(
-      typeof dbUrl === 'string' ? new URL(dbUrl) : dbUrl,
+      typeof dbUrl === "string" ? new URL(dbUrl) : dbUrl
     );
     this.migrator = new MySqlSessionStorageMigrator(
       this.connection,
       this.options.migratorOptions,
-      migrationList,
+      migrationList
     );
     this.ready = this.migrator.applyMigrations(this.internalInit);
   }
@@ -68,20 +74,20 @@ export class MySQLSessionStorage implements SessionStorage {
     const entries = session
       .toPropertyArray()
       .map(([key, value]) =>
-        key === 'expires'
+        key === "expires"
           ? [key, Math.floor((value as number) / 1000)]
-          : [key, value],
+          : [key, value]
       );
     const query = `
       REPLACE INTO ${this.options.sessionTableName}
-      (${entries.map(([key]) => key).join(', ')})
+      (${entries.map(([key]) => key).join(", ")})
       VALUES (${entries
         .map(() => `${this.connection.getArgumentPlaceholder()}`)
-        .join(', ')})
+        .join(", ")})
     `;
     await this.connection.query(
       query,
-      entries.map(([_key, value]) => value),
+      entries.map(([_key, value]) => value)
     );
     return true;
   }
@@ -114,7 +120,7 @@ export class MySQLSessionStorage implements SessionStorage {
       DELETE FROM ${this.options.sessionTableName}
       WHERE id IN (${ids
         .map(() => `${this.connection.getArgumentPlaceholder()}`)
-        .join(',')});
+        .join(",")});
     `;
     await this.connection.query(query, ids);
     return true;
@@ -144,14 +150,14 @@ export class MySQLSessionStorage implements SessionStorage {
     this.connection = new MySqlConnection(
       dbUrl,
       this.options.sessionTableName,
-      this.options.connectionPoolLimit,
+      this.options.connectionPoolLimit
     );
     await this.createTable();
   }
 
   private async createTable() {
     const hasSessionTable = await this.connection.hasTable(
-      this.options.sessionTableName,
+      this.options.sessionTableName
     );
     if (!hasSessionTable) {
       const query = `
