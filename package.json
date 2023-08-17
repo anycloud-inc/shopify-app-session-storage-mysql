@@ -15,9 +15,7 @@
   "main": "./build/src/mysql.js",
   "types": "./build/src/mysql.d.ts",
   "scripts": {
-    "build": "tsc",
-    "type:dts": "tsc --emitDeclarationOnly",
-    "type:check": "tsc --noEmit"
+    "build": "tsc"
   },
   "publishConfig": {
     "access": "public"
