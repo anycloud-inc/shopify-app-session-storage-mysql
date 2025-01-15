@@ -7,6 +7,7 @@ export interface MySQLSessionStorageOptions extends RdbmsSessionStorageOptions {
 export declare class MySQLSessionStorage implements SessionStorage {
     static withCredentials(data: {
         host: string;
+        port: number;
         dbName: string;
         username: string;
         password: string;
