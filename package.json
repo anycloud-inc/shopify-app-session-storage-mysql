@@ -38,8 +38,8 @@
     "tslib": "^2.4.0"
   },
   "peerDependencies": {
-    "@shopify/shopify-api": "^11.7.0",
-    "@shopify/shopify-app-session-storage": "^3.0.10"
+    "@shopify/shopify-api": "^11.13.0",
+    "@shopify/shopify-app-session-storage": "^3.0.18"
   },
   "devDependencies": {
     "@shopify/eslint-plugin": "^46.0.0",
